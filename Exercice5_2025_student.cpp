@@ -7,7 +7,6 @@
 #include <numeric>
 #include "ConfigFile.tpp"
 #include <algorithm>
-
 using namespace std;
 
 
@@ -229,7 +228,16 @@ int main(int argc, char* argv[])
     // Evolution :
     for(int i(1); i<N-1; ++i)
     {
-      fnext[i] = 0.0; // TODO : Schémas pour les 3 cas, Equation A ou B ou C
+      //équation A : u= const -->beta2[i] est constant ici car u est constant donc pour n'importe quel indice c'est le même
+      if (equation_type=="A") {
+        fnext[i] = (2*(1-beta2[0])*fnow[i]-fpast[i]+beta2[i]*(fnow[i+1]+fnow[i-1])); // TODO : Schémas pour les 3 cas, Equation A ou B ou C
+      }else if (equation_type=="B"){
+      // avec méthode WKB   
+      
+      }else{
+        // avec méhtode WKB
+      }
+      
     }
 
     // Impose boundary conditions
