@@ -25,7 +25,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[0] = 0.0; 
 	// NB: on peut aussi utiliser la condition "excitation" et poser A=0
       }else if(bc_l == "libre"){
-        fnext[0] = fnext[1]; /** DONE  : Modifier pour imposer la condition au bord gauche libre **/
+        fnext[0] = fnext[1]; /// DONE : Modifier pour imposer la condition au bord gauche libre **/
       }else if (bc_l =="sortie"){
         fnext[0] = fnow[1] + beta2[1] * ( fnow[1] - fnow[2] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
       }else if (bc_l == "excitation"){
@@ -55,7 +55,7 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
 
 if(initialization=="mode"){
   /// TODO: initialiser la fonction f(x,t=0) selon un mode propre
-  finit_ = 0.0;
+  finit_ =  cos( PI * ( 1/2 + n_init ) / L ) ; // * A ? <- amplitude = 1 ? 
 }
 else{
   /// DONE : initialiser la fonction f(x,t=0) selon la donnée du problème
@@ -261,7 +261,6 @@ int main(int argc, char* argv[])
 		  
 			fnext[i] = pow(dt/(2*dx),2) * ( vel2[i+1] - vel2[i-1] ) * ( fnow[i+1] - fnow[i-1] ) + 2 * ( 1 - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); // eq B 
 			break ; 
-		  
 		  
 		  case 'C' : // eq C 
 		  
