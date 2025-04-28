@@ -12,7 +12,7 @@ using namespace std;
 
 
 double energy(const std::vector<double>& fnow, double dx) {
-  double ener = 0.0; // TODO: compute quantity E 
+  double ener = 0.0; /// TODO: compute quantity E 
     return 0.0;
 }
 
@@ -54,7 +54,7 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
   const double PI = 3.1415926535897932384626433832795028841971e0;
 
 if(initialization=="mode"){
-  // TODO: initialiser la fonction f(x,t=0) selon un mode propre
+  /// TODO: initialiser la fonction f(x,t=0) selon un mode propre
   finit_ = 0.0;
 }
 else{
@@ -125,6 +125,7 @@ int main(int argc, char* argv[])
   double L       = configFile.get<double>("L");
   double om      = configFile.get<double>("om");
   int n_stride(configFile.get<int>("n_stride"));
+  char eq      = configFile.get<char>("eq"); // équation à utiliser entre A, B et C 
 
   int N = nx+1;                                // nb pts de maillage
 
@@ -177,15 +178,14 @@ int main(int argc, char* argv[])
 		   else 
 		   { h0[i] = hR ; }
 	   }
-       // h0[i]  = 999.999; // MODIFIER
      }
      vel2[i]  = g * h0[i];
   }
   // maiximal value of u^2 (to be used to set dt)
   auto max_vel2 = std::max_element(vel2.begin(), vel2.end());
-  // TODO: set dt for given CFL
+  /// TODO: set dt for given CFL
   dt = CFL * dx / ( g * h00 ); /** MODIFIED **/ // vérifier si on doit prendre h[0] ou pas 
-  // TODO: define dt and CFL with given nsteps
+  /// TODO: define dt and CFL with given nsteps
   if(impose_nsteps){
     dt  = tfin / nsteps ; /** MODIFIED **/ 
     CFL = pow( g * h00 ,1/2)*dt/dx; /** MODIFIED **/
@@ -208,23 +208,23 @@ int main(int argc, char* argv[])
 
   // Initialisation des tableaux du schema numerique :
 
-  //TODO initialize f and beta
+  /// TODO initialize f and beta
   for(int i(0); i<N; ++i)
   {
     fpast[i] = 0.;
     fnow[i]  = 0.;
-    beta2[i] = 1.0; // TODO: Modifier pour calculer beta^2 aux points de maillage
+    beta2[i] = sqrt(vel2[i]) * dt / dx ; /// DONE: Modifier pour calculer beta^2 aux points de maillage
 
-    fnow[i]  = finit(x[i], n_init,  L, f_hat, x1, x2, initialization);
+    fnow[i]  = finit(x[i], n_init,  L, f_hat, x1, x2, initialization); // finit(xi)
 
     if(initial_state =="static"){
-      fpast[i] = 0.0; // TODO: system is at rest for t<=0, 
+      fpast[i] = fnow[i] ; /// DONE : system is at rest for t<=0 : finit(xi)
     }
     else if(initial_state =="right"){ 
-      fpast[i] = 0.0; // TODO: propagation to the right
+      fpast[i] = finit( x[i] + abs( sqrt(vel2[i]) ) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the right :  finit(xi + |u|delta t)
     }
     else if(initial_state =="left"){
-      fpast[i] = 0.0; // TODO: propagation to the left
+      fpast[i] = finit( x[i] - abs( sqrt(vel2[i]) ) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the left : finit(xi - |u|delta t)
     }
   }
 
@@ -247,7 +247,33 @@ int main(int argc, char* argv[])
     // Evolution :
     for(int i(1); i<N-1; ++i)
     {
-      fnext[i] = 0.0; // TODO : Schémas pour les 3 cas, Equation A ou B ou C
+      /// TODO : Schémas pour les 3 cas, Equation A ou B ou C
+      // beta2 = beta2 ? 
+      
+      switch ( eq )
+      {
+		  case 'A' : // eq A 
+		  
+			fnext[i] = 2 * ( 1 - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ; 
+			break ; 
+		
+		  case 'B' : // eq B 
+		  
+			fnext[i] = pow(dt/(2*dx),2) * ( vel2[i+1] - vel2[i-1] ) * ( fnow[i+1] - fnow[i-1] ) + 2 * ( 1 - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); // eq B 
+			break ; 
+		  
+		  
+		  case 'C' : // eq C 
+		  
+			fnext[i] = pow(dt/dx,2) * ( vel2[i+1] - vel2[i-1] ) * fnow[i] - 2 * ( 1 - 2*beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
+			break ; 
+		   
+		  default : 
+		  
+			cerr << "Cas différent de A, B ou C " << endl ; 
+			break ; 
+	  }
+       
     }
 
     // Impose boundary conditions
