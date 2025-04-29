@@ -12,8 +12,13 @@ using namespace std;
 
 
 double energy(const std::vector<double>& fnow, double dx) {
-  double ener = 0.0; /// TODO: compute quantity E 
-    return 0.0;
+
+  double norm2 (0) ; 		
+  for ( auto const & el : fnow )
+  { norm2 += el ; }	
+  	
+  double ener = norm2*dx; /// TODO: compute quantity E 
+  return ener ;
 }
 
 
@@ -64,7 +69,7 @@ else{
   else 
   {
 	  if ( x1 < x < x2 )
-	  { return f_hat * ( 1 - cos( 2*PI * (x-x1)/(x2-x1) ) )/ 2 ; }
+	  { return f_hat * ( 1 - cos( 2*PI * (x-x1)/(x2-x1) ) ) / 2 ; }
 	  else 
 	  { return 0 ; }
   }
@@ -213,7 +218,8 @@ int main(int argc, char* argv[])
   {
     fpast[i] = 0.;
     fnow[i]  = 0.;
-    beta2[i] = sqrt(vel2[i]) * dt / dx ; /// DONE: Modifier pour calculer beta^2 aux points de maillage
+    beta2[i] = 1. ; //vel2[i] * pow(dt/dx,2) ; /// DONE: Modifier pour calculer beta^2 aux points de maillage
+    //cout << beta2[i] << endl ; 
 
     fnow[i]  = finit(x[i], n_init,  L, f_hat, x1, x2, initialization); // finit(xi)
 
@@ -221,10 +227,10 @@ int main(int argc, char* argv[])
       fpast[i] = fnow[i] ; /// DONE : system is at rest for t<=0 : finit(xi)
     }
     else if(initial_state =="right"){ 
-      fpast[i] = finit( x[i] + abs( sqrt(vel2[i]) ) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the right :  finit(xi + |u|delta t)
+      fpast[i] = finit( x[i] + sqrt(abs(vel2[i])) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the right :  finit(xi + |u|delta t)
     }
     else if(initial_state =="left"){
-      fpast[i] = finit( x[i] - abs( sqrt(vel2[i]) ) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the left : finit(xi - |u|delta t)
+      fpast[i] = finit( x[i] - sqrt(abs(vel2[i])) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the left : finit(xi - |u|delta t)
     }
   }
 
@@ -248,23 +254,25 @@ int main(int argc, char* argv[])
     for(int i(1); i<N-1; ++i)
     {
       /// TODO : Schémas pour les 3 cas, Equation A ou B ou C
-      // beta2 = beta2 ? 
+      // beta2 = beta^2 ? 
       
-      switch ( equation_type )
+      //cout << beta2[i] << endl ; 
+      
+      switch ( equation_type ) 
       {
 		  case 'A' : // eq A 
 		  
-			fnext[i] = 2 * ( 1 - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ; 
+			fnext[i] = 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ; 
 			break ; 
 		
 		  case 'B' : // eq B 
 		  
-			fnext[i] = pow(dt/(2*dx),2) * ( vel2[i+1] - vel2[i-1] ) * ( fnow[i+1] - fnow[i-1] ) + 2 * ( 1 - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); // eq B 
+			fnext[i] = pow(dt/(2.*dx),2) * ( vel2[i+1] - vel2[i-1] ) * ( fnow[i+1] - fnow[i-1] ) + 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
 			break ; 
 		  
 		  case 'C' : // eq C 
 		  
-			fnext[i] = pow(dt/dx,2) * ( vel2[i+1] - vel2[i-1] ) * fnow[i] - 2 * ( 1 - 2*beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
+			fnext[i] = pow(dt/dx,2) * ( vel2[i+1] - vel2[i-1] ) * fnow[i] - 2. * ( 1. - 2.*beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
 			break ; 
 		   
 		  default : 
