@@ -61,7 +61,7 @@ E = np.loadtxt(outputs[-1]+'_en') # temps et énergie
 print(x.shape)
 print(f.shape)
 
-def ftPlot() :
+def ftPlot(Evolution = True) : # Evolution = True => animation , sinon on choisit les indexes. 
 
     t = f[:,0]
     #print(t)
@@ -76,7 +76,7 @@ def ftPlot() :
         plt.plot(x,f_a_t)
         plt.title(f"t = {t[i]}")
         plt.draw()
-        plt.pause(1)
+        plt.pause(0.2)
         plt.close()
         
     plt.ioff() # pour arrêter 
