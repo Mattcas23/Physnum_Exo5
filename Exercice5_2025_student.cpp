@@ -54,7 +54,7 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
   const double PI = 3.1415926535897932384626433832795028841971e0;
 
 if(initialization=="mode"){
-  /// TODO: initialiser la fonction f(x,t=0) selon un mode propre
+  /// DONE : initialiser la fonction f(x,t=0) selon un mode propre
   finit_ =  cos( PI * ( 1/2 + n_init ) / L ) ; // * A ? <- amplitude = 1 ? 
 }
 else{
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
   double Nsteps;
   int stride(0);
 
-  string inputPath("configuration.in"); // Fichier d'input par defaut
+  string inputPath("input_example_student"); // Fichier d'input par defaut
   if(argc>1) // Fichier d'input specifie par l'utilisateur ("./Exercice7 config_perso.in")
     inputPath = argv[1];
 
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
   double L       = configFile.get<double>("L");
   double om      = configFile.get<double>("om");
   int n_stride(configFile.get<int>("n_stride"));
-  char eq      = configFile.get<char>("eq"); // équation à utiliser entre A, B et C 
+  //char eq      = configFile.get<char>("eq"); // équation à utiliser entre A, B et C 
 
   int N = nx+1;                                // nb pts de maillage
 
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
   dx = L / (N-1);
   bool ecrire_f = configFile.get<bool>("ecrire_f"); // Exporter f(x,t) ou non
  // Eq.(1) ou Eq.(2) [ou Eq.(6) (faculattif)]: Eq1, Eq2 ou Eq6
-  string equation_type = configFile.get<string>("equation_type");
+  char equation_type = configFile.get<char>("equation_type");
   
 
   for(int i(0); i<N; ++i){ 
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
       /// TODO : Schémas pour les 3 cas, Equation A ou B ou C
       // beta2 = beta2 ? 
       
-      switch ( eq )
+      switch ( equation_type )
       {
 		  case 'A' : // eq A 
 		  
@@ -270,6 +270,7 @@ int main(int argc, char* argv[])
 		  default : 
 		  
 			cerr << "Cas différent de A, B ou C " << endl ; 
+			cerr << equation_type << endl ; 
 			break ; 
 	  }
        
