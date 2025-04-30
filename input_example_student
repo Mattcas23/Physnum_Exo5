@@ -1,5 +1,5 @@
 cb_gauche = fixe 
-cb_droite = libre  
+cb_droite = libre 
 v_uniform = true
 
 A=0.1
@@ -7,15 +7,15 @@ f_hat = 1.0
 x1=3.0
 x2=8.0
 
-tfin=30.0
-equation_type = B 
+tfin=50.0
+equation_type = B
 nx=64
-n_init=3 ! numéro du mode propre à initialiser
-initialization=mode ! mode, autre
-initial_state=static ! right, left, static
+n_init=1 ! numéro du mode propre à initialiser
+initialization=autre ! mode, autre
+initial_state=right ! right, left, static
 
-CFL= 0.99
-nsteps=40
+CFL= 1.0
+nsteps= 5000
 impose_nsteps = true 
 
 output=test.out
