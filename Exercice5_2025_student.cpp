@@ -7,6 +7,7 @@
 #include <numeric>
 #include "ConfigFile.tpp"
 #include <algorithm>
+#include <typeinfo>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ double energy(const std::vector<double>& fnow, double dx) {
 
   double norm2 (0) ; 		
   for ( auto const & el : fnow )
-  { norm2 += el ; }	
+  { norm2 += pow(el,2) ; }	
   	
   double ener = norm2*dx; /// TODO: compute quantity E 
   return ener ;
@@ -27,7 +28,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
 		vector<double> &beta2, string &bc_l, string &bc_r, int &N)
 {
       if (bc_l == "fixe"){
-        fnext[0] = 0.0; 
+        fnext[0] = 0; 
 	// NB: on peut aussi utiliser la condition "excitation" et poser A=0
       }else if(bc_l == "libre"){
         fnext[0] = fnext[1]; /// DONE : Modifier pour imposer la condition au bord gauche libre **/
@@ -40,7 +41,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
       }
 	      
       if (bc_r == "fixe"){
-        fnext[N-1] = 0.0; 
+        fnext[N-1] = 0; 
 	// NB: on peut aussi utiliser la condition "excitation" et poser A=0	
       }else if(bc_r == "libre"){
         fnext[N-1] = fnext[N-2]; /// DONE : Modifier pour imposer la condition au bord droit libre 
@@ -48,6 +49,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] ); ///  Done: Modifier pour imposer la condition au bord droit "sortie de l'onde" ( à vérifier ) 
       }else if (bc_l == "excitation"){ 
         fnext[N-1] = A * sin(om*t); /** DONE : Modifier pour imposer la condition au bord droit sinusoidale **/
+        //cout << fnext[N-1] << endl ; 
       }else{
         cerr << "Merci de choisir une condition aux bord droit valide" << endl;
       }
@@ -60,15 +62,15 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
 
 if(initialization=="mode"){
   /// DONE : initialiser la fonction f(x,t=0) selon un mode propre
-  finit_ =  cos( PI * ( 1/2 + n_init ) / L ) ; // * A ? <- amplitude = 1 ? 
+  finit_ = cos( PI * x * ( 1/2 + n_init ) / L ) ; // * A ? <- amplitude = 1 ? 
 }
 else{
   /// DONE : initialiser la fonction f(x,t=0) selon la donnée du problème
-  if ( x <= x1 )
+  if ( 0 < x and x <= x1 )
   { return 0 ; }
   else 
   {
-	  if ( x1 < x < x2 )
+	  if ( x1 < x and x < x2 )
 	  { return f_hat * ( 1 - cos( 2*PI * (x-x1)/(x2-x1) ) ) / 2 ; }
 	  else 
 	  { return 0 ; }
@@ -164,10 +166,11 @@ int main(int argc, char* argv[])
  // Eq.(1) ou Eq.(2) [ou Eq.(6) (faculattif)]: Eq1, Eq2 ou Eq6
   char equation_type = configFile.get<char>("equation_type");
   
-
+  
+  
   for(int i(0); i<N; ++i){ 
      x[i] = i * dx ;
-     h0[i] = 0.0;
+     
      if(v_uniform){
         h0[i]  = h00;
      } 
@@ -184,16 +187,18 @@ int main(int argc, char* argv[])
 		   { h0[i] = hR ; }
 	   }
      }
+     
      vel2[i]  = g * h0[i];
   }
+
   // maiximal value of u^2 (to be used to set dt)
   auto max_vel2 = std::max_element(vel2.begin(), vel2.end());
-  /// TODO: set dt for given CFL
-  dt = CFL * dx / ( g * h00 ); /** MODIFIED **/ // vérifier si on doit prendre h[0] ou pas 
-  /// TODO: define dt and CFL with given nsteps
+  /// DONE : set dt for given CFL
+  dt = CFL * dx / ( sqrt(abs(*max_vel2)) ); 
+  /// DONE : define dt and CFL with given nsteps
   if(impose_nsteps){
-    dt  = tfin / nsteps ; /** MODIFIED **/ 
-    CFL = pow( g * h00 ,1/2)*dt/dx; /** MODIFIED **/
+    dt = tfin / nsteps ; 
+    CFL = sqrt(*max_vel2)*dt/dx; 
   }
 
   // Fichiers de sortie :
@@ -218,13 +223,13 @@ int main(int argc, char* argv[])
   {
     fpast[i] = 0.;
     fnow[i]  = 0.;
-    beta2[i] = 1. ; //vel2[i] * pow(dt/dx,2) ; /// DONE: Modifier pour calculer beta^2 aux points de maillage
-    //cout << beta2[i] << endl ; 
-
+    beta2[i] = vel2[i] * pow(dt/dx,2) ; /// DONE: Modifier pour calculer beta^2 aux points de maillage
+    
     fnow[i]  = finit(x[i], n_init,  L, f_hat, x1, x2, initialization); // finit(xi)
 
     if(initial_state =="static"){
       fpast[i] = fnow[i] ; /// DONE : system is at rest for t<=0 : finit(xi)
+      //cout << "static" << endl ; 
     }
     else if(initial_state =="right"){ 
       fpast[i] = finit( x[i] + sqrt(abs(vel2[i])) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the right :  finit(xi + |u|delta t)
@@ -232,8 +237,7 @@ int main(int argc, char* argv[])
     else if(initial_state =="left"){
       fpast[i] = finit( x[i] - sqrt(abs(vel2[i])) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the left : finit(xi - |u|delta t)
     }
-  }
-
+  }  
 
   cout<<"beta2[0] is "<<beta2[0]<<endl;
   cout<<"dt is "<< dt <<endl;
@@ -254,15 +258,12 @@ int main(int argc, char* argv[])
     for(int i(1); i<N-1; ++i)
     {
       /// TODO : Schémas pour les 3 cas, Equation A ou B ou C
-      // beta2 = beta^2 ? 
-      
-      //cout << beta2[i] << endl ; 
       
       switch ( equation_type ) 
       {
 		  case 'A' : // eq A 
 		  
-			fnext[i] = 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ; 
+			fnext[i] = 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ;
 			break ; 
 		
 		  case 'B' : // eq B 
@@ -281,6 +282,8 @@ int main(int argc, char* argv[])
 			cerr << equation_type << endl ; 
 			break ; 
 	  }
+	  
+	  //cout << "b : " << beta2[i] << endl ; 
        
     }
 
