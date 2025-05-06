@@ -36,6 +36,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[0] = fnow[1] + beta2[1] * ( fnow[1] - fnow[2] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
       }else if (bc_l == "excitation"){
         fnext[0] = A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
+        //cout << "excitation : " << A * sin(om*t) << endl ; 
       }else{
         cerr << "Merci de choisir une condition aux bord gauche valide" << endl;
       }
@@ -62,7 +63,7 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
 
 if(initialization=="mode"){
   /// DONE : initialiser la fonction f(x,t=0) selon un mode propre
-  finit_ = cos( PI * x * ( 1/2 + n_init ) / L ) ; // * A ? <- amplitude = 1 ? 
+  finit_ = sin( ( n_init ) * PI * x / L  ) ; // * A ? <- amplitude = 1 ? 
 }
 else{
   /// DONE : initialiser la fonction f(x,t=0) selon la donnée du problème
@@ -177,11 +178,11 @@ int main(int argc, char* argv[])
      else {
        /// DONE: programmer la fonction h(x) selon la donnée
        
-       if ( 0 <= x[i] <= xa )
+       if ( 0 <= x[i] and x[i] <= xa )
        { h0[i] = hL ; }
        else 
        {
-		   if ( xa < x[i] < xb )
+		   if ( xa < x[i] and x[i] < xb )
 		   { h0[i] = ( hL + hR ) / 2 + ( hL - hR ) * cos( PI * (x[i] - xa) / (xb - xa) ) / 2 ; }
 		   else 
 		   { h0[i] = hR ; }
@@ -199,6 +200,7 @@ int main(int argc, char* argv[])
   if(impose_nsteps){
     dt = tfin / nsteps ; 
     CFL = sqrt(*max_vel2)*dt/dx; 
+    cout << "Impose nsteps : CLF = " << CFL << endl ; 
   }
 
   // Fichiers de sortie :
@@ -229,7 +231,6 @@ int main(int argc, char* argv[])
 
     if(initial_state =="static"){
       fpast[i] = fnow[i] ; /// DONE : system is at rest for t<=0 : finit(xi)
-      //cout << "static" << endl ; 
     }
     else if(initial_state =="right"){ 
       fpast[i] = finit( x[i] + sqrt(abs(vel2[i])) * dt , n_init,  L, f_hat, x1, x2, initialization ) ; /// DONE : propagation to the right :  finit(xi + |u|delta t)
@@ -239,6 +240,7 @@ int main(int argc, char* argv[])
     }
   }  
 
+  cout << "beta2 = [" << beta2 << ']' << endl ; 	
   cout<<"beta2[0] is "<<beta2[0]<<endl;
   cout<<"dt is "<< dt <<endl;
 
@@ -263,7 +265,9 @@ int main(int argc, char* argv[])
       {
 		  case 'A' : // eq A 
 		  
+			//cout << "beta2[" << i << "] = " << beta2[i] << endl ; 
 			fnext[i] = 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ;
+			//cout << "fnext = " << fnext[i] << endl ; 
 			break ; 
 		
 		  case 'B' : // eq B 
@@ -286,13 +290,17 @@ int main(int argc, char* argv[])
 	  //cout << "b : " << beta2[i] << endl ; 
        
     }
-
+	//cout << t << endl  ;
     // Impose boundary conditions
     boundary_condition(fnext, fnow, A, om, t, dt, beta2, bc_l, bc_r, N);
+    
+    //cout << fnext << endl ; 
 
     // Mise a jour et préparer le pas suivant:
     fpast = fnow;
     fnow  = fnext;
+    
+    //cout << fnow << endl ; 
   }
 
   if(ecrire_f) fichier_f << t << " " << fnow << endl;
