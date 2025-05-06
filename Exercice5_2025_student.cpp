@@ -254,15 +254,27 @@ int main(int argc, char* argv[])
   cout<<"beta2[0] is "<<beta2[0]<<endl;
   cout<<"dt is "<< dt <<endl;
 
-
+  int i (0) ; 
   // Boucle temporelle :
   for(t=0.; t<tfin-.5*dt; t+=dt)
   {
-    // Ecriture :
+	++ i ;   	  
+    // Ecriture :x
     if(stride%n_stride == 0)
     {
+	  if ( not v_uniform ) 
+	  {
+		  if ( i % 100 == 0 )
+		  {
+	        if(ecrire_f) fichier_f << t << " " << fnow << endl;
+            fichier_en << t << " " << energy(fnow,dx) << endl;	
+		  }
+	  }	
+	else{	
+		
       if(ecrire_f) fichier_f << t << " " << fnow << endl;
       fichier_en << t << " " << energy(fnow,dx) << endl;
+    } 
      }
     ++stride;
 
@@ -312,7 +324,8 @@ int main(int argc, char* argv[])
     
     //cout << fnow << endl ; 
   }
-
+  
+	  
   if(ecrire_f) fichier_f << t << " " << fnow << endl;
   fichier_x << x << endl;
   fichier_v << vel2 << endl;
