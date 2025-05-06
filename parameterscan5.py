@@ -20,7 +20,7 @@ input_filename = 'input_example_student'  # Name of the input file
 
 # ------------------------------------- Simulations ----------------------------------- #
 
-nsteps = np.array([40])
+nsteps = np.array([3000])
 nx = np.array([64])
 
 
@@ -58,8 +58,41 @@ f = np.loadtxt(outputs[-1]+'_f') # 
 v = np.loadtxt(outputs[-1]+'_v') 
 E = np.loadtxt(outputs[-1]+'_en') # temps et énergie
 
+print(E)
+
 print(x.shape)
 print(f.shape)
+
+Tn = 0 # période d'oscillation calculée analytiquement
+
+def f_analytique ( t,x,w = 0 ) : # changer les valeurs 
+
+    n = 1
+    L = 12
+    return np.cos( w * t ) * np.sin( n * x * np.pi() / L ) 
+
+def Erreur ( x , f , t = Tn ) :
+
+    dx = abs(x[1] - x[0]) # intégrale de Riemann 
+    err = ( f[t,1:] - f_analytique(t,x) ).sum() * dx # somme de Riemann
+    return err
+
+def Convergence ( t = Tn ) :
+
+    err = []
+    for output in outputs :
+
+        xi = np.loadtxt(output+'_x')
+        fi = np.loadtxt(output+'_f')
+        err.append(Erreur( t = Tn , x = xi, f = fi))
+    
+    plt.plot(nx,err)
+    plt.title(f"$\\Beta_{CFL} = $ {1}") 
+    plt.xlabel("$n_x$", fontsize = fs)
+    plt.ylabel("n_{steps}", fontsize = fs)
+    
+
+
 
 def ftPlot() : 
 
@@ -96,8 +129,7 @@ def Eplot () :
 
     En = E[:,1]
     t  = E[:,0]
-    print(En)
-    print(t)
+    print(max(En))
     
     plt.figure()
     plt.plot(t,En, color = 'black')
@@ -107,7 +139,8 @@ def Eplot () :
 
 
 ftPlot()
-#Eplot()
+#Convergence()
+Eplot()
 PlotCouleur()
 plt.show()
     
