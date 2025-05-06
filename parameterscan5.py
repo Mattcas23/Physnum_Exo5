@@ -20,9 +20,11 @@ input_filename = 'input_example_student'  # Name of the input file
 
 # ------------------------------------- Simulations ----------------------------------- #
 
-nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
-nx = np.array([1,2,3,4,5,6,7,8,9])*20
+#nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
+#nx = np.array([1,2,3,4,5,6,7,8,9])*20
 
+nsteps = np.array([50e3])
+nx = np.array([10000])
 
 paramstr = 'nsteps'  # Parameter name to scan
 param = nsteps  # Parameter values to scan
@@ -47,8 +49,8 @@ for i in range(nsimul):
 
 for i in range(nsimul):  # Iterate through the results of all simulations
     data = np.loadtxt(outputs[i]+'_x')  # Load the output file of the i-th simulation
-    xx = data[-1] # position finale 
-    convergence_list.append(xx)
+    #xx = data[-1] # position finale 
+    #convergence_list.append(xx)
 
 lw = 1.5
 fs = 16
@@ -136,11 +138,17 @@ def Eplot () :
     plt.xlabel('Temps [s]'   , fontsize = fs)
     plt.ylabel('Energie [J]' , fontsize = fs)
     
+def vPlot () :
 
+    plt.figure() 
+    plt.plot(x,np.sqrt(v),color = "black")
+    plt.xlabel("x [m]", fontsize = fs)
+    plt.ylabel("v [m/s]", fontsize = fs)
 
 #ftPlot()
-Convergence()
+#Convergence()
 Eplot()
 PlotCouleur()
+vPlot()
 plt.show()
     
