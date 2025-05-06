@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
 		   if ( xa < x[i] and x[i] < xb )
 		   { h0[i] = ( hL + hR ) / 2 + ( hL - hR ) * cos( PI * (x[i] - xa) / (xb - xa) ) / 2 ; }
 		   else 
-		   { h0[i] = hR ; }
+		   { if ( x[i] < L ) {h0[i] = hR ;} }
 	   }
      }
      
@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
     {
 	  if ( not v_uniform ) 
 	  {
-		  if ( i % 100 == 0 )
+		  if ( i % 200 == 0 )
 		  {
 	        if(ecrire_f) fichier_f << t << " " << fnow << endl;
             fichier_en << t << " " << energy(fnow,dx) << endl;	
