@@ -33,7 +33,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
       }else if(bc_l == "libre"){
         fnext[0] = fnext[1]; /// DONE : Modifier pour imposer la condition au bord gauche libre **/
       }else if (bc_l =="sortie"){
-        fnext[0] = fnow[1] + beta2[1] * ( fnow[1] - fnow[2] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
+        fnext[0] = fnow[1] + beta2[1] * ( fnow[0] - fnow[1] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
       }else if (bc_l == "excitation"){
         fnext[0] = A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
         //cout << "excitation : " << A * sin(om*t) << endl ; 
@@ -47,8 +47,9 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
       }else if(bc_r == "libre"){
         fnext[N-1] = fnext[N-2]; /// DONE : Modifier pour imposer la condition au bord droit libre 
       }else if (bc_r =="sortie"){
-        fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] ); ///  Done: Modifier pour imposer la condition au bord droit "sortie de l'onde" ( à vérifier ) 
-      }else if (bc_l == "excitation"){ 
+        fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] );
+      // fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] ); ///  Done: Modifier pour imposer la condition au bord droit "sortie de l'onde" ( à vérifier ) 
+      }else if (bc_r == "excitation"){ 
         fnext[N-1] = A * sin(om*t); /** DONE : Modifier pour imposer la condition au bord droit sinusoidale **/
         //cout << fnext[N-1] << endl ; 
       }else{
@@ -63,7 +64,7 @@ double finit(double x, double n_init, double L, double f_hat, double x1, double 
 
 if(initialization=="mode"){
   /// DONE : initialiser la fonction f(x,t=0) selon un mode propre
-  finit_ = sin( ( n_init ) * PI * x / L  ) ; // * A ? <- amplitude = 1 ? 
+  finit_ = cos( ( n_init + 0.5 ) * PI * x / L  ) ; 
 }
 else{
   /// DONE : initialiser la fonction f(x,t=0) selon la donnée du problème
@@ -250,7 +251,7 @@ int main(int argc, char* argv[])
     }
   }  
 
-  cout << "beta2 = [" << beta2 << ']' << endl ; 	
+  //cout << "beta2 = [" << beta2 << ']' << endl ; 	
   cout<<"beta2[0] is "<<beta2[0]<<endl;
   cout<<"dt is "<< dt <<endl;
 
