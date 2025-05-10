@@ -33,7 +33,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
       }else if(bc_l == "libre"){
         fnext[0] = fnext[1]; /// DONE : Modifier pour imposer la condition au bord gauche libre **/
       }else if (bc_l =="sortie"){
-        fnext[0] = fnow[1] + beta2[1] * ( fnow[0] - fnow[1] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
+        fnext[0] = fnow[0] - beta2[0] * ( fnow[0] - fnow[1] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
       }else if (bc_l == "excitation"){
         fnext[0] = fnow[0] + A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
         //cout << "excitation : " << A * sin(om*t) << endl ; 
