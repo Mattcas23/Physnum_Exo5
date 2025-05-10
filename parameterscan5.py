@@ -20,11 +20,14 @@ input_filename = 'input_example_student'  # Name of the input file
 
 # ------------------------------------- Simulations ----------------------------------- #
 
-#nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
-#nx = np.array([1,2,3,4,5,6,7,8,9])*20
+nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
+nx = np.array([1,2,3,4,5,6,7,8,9])*20
 
-nsteps = np.array([50e3])
-nx = np.array([10000])
+#nsteps = np.array([50e3])
+#nx = np.array([10000])
+
+#nsteps = np.array([1000])
+#nx = np.array([64])
 
 paramstr = 'nsteps'  # Parameter name to scan
 param = nsteps  # Parameter values to scan
@@ -65,30 +68,32 @@ E = np.loadtxt(outputs[-1]+'_en') # temps et énergie
 print(x.shape)
 print(f.shape)
 
-def f_analytique ( t, x, w = 0 ) : # changer les valeurs 
+def f_analytique (T ,  x , L = 15.0 ) : # changer les valeurs , on a que T = tfin 
 
-    n = 1
-    L = 12
+    n = 2
     pi = 3.1415926535897932384626433832795028841971
-    return np.cos( w * t ) * np.sin( n * x * pi / L ) 
+    kn = ( n + 0.5 ) * pi / L 
+    om = 2 * pi / T # calcul de oméga à partir de la période
+    
+    return np.sin( om * T ) * np.cos( kn*x ) 
 
-def Erreur ( x , f , tfin ) :
+def Erreur (x , f , tfin) :
 
     dx = abs(x[1] - x[0]) # intégrale de Riemann
     err = ( f[-1,1:] - f_analytique(tfin,x) ).sum() * dx # somme de Riemann
     # f[-1,1:] : comme la simulation d'arrête a tfin = T, on prend la dernière valeur 
     return err
 
-def Convergence ( t = 2.39457 , norder = 1 ) : # simulation réalisée avec n = 2 
+def Convergence ( T = 2.39457 , norder = 1 ) : # simulation réalisée avec n = 2 , T période pour n = 2 
 
     err = np.array([])
     for output in outputs :
 
         xi = np.loadtxt(output+'_x')
         fi = np.loadtxt(output+'_f')
-        err = np.append(err,Erreur( tfin = t , x = xi, f = fi))
+        err = np.append(err,Erreur( tfin = T , x = xi, f = fi ))
     
-    plt.plot(pow(t/nsteps,norder),err, 'k+-')
+    plt.plot(pow(T/nsteps,norder),err,'k+-') # pow(T/nsteps,norder)
     #plt.title("$\\Beta_{CFL} = $") 
     plt.xlabel(f"$(\\Delta t)^{norder}$", fontsize = fs)
     plt.ylabel("$\\delta_{err}$", fontsize = fs)
@@ -111,7 +116,7 @@ def ftPlot() :
         plt.scatter(x,f_a_t)
         plt.title(f"t = {t[i]}")
         plt.draw()
-        plt.pause(0.0002)
+        plt.pause(0.02)
         plt.close()
         
     plt.ioff() # pour arrêter
@@ -146,9 +151,9 @@ def vPlot () :
     plt.ylabel("v [m/s]", fontsize = fs)
 
 #ftPlot()
-#Convergence()
-Eplot()
+Convergence()
+#Eplot()
 PlotCouleur()
-vPlot()
+#vPlot()
 plt.show()
     
