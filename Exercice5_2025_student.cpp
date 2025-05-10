@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
   
   if ( impose_nsteps == true and initialization =="mode" )
   { 
-	  double kn = ( n_init ) * PI / L ; // k du nème mode propre 
+	  double kn = ( n_init + 0.5 ) * PI / L ; // k du nème mode propre 
 	  double v  = sqrt(abs(vel2[0])) ; // la vitesse est censée être la même dans le 5.3  
 	  tfin = 2*PI / (kn*v) ; // t = 2pi / (v*k)
 	  cout << "tfin = " << tfin << endl ; 
