@@ -20,14 +20,14 @@ input_filename = 'input_example_student'  # Name of the input file
 
 # ------------------------------------- Simulations ----------------------------------- #
 
-nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
-nx = np.array([1,2,3,4,5,6,7,8,9])*20
+#nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
+#nx = np.array([1,2,3,4,5,6,7,8,9])*20
 
 #nsteps = np.array([50e3])
 #nx = np.array([10000])
 
-#nsteps = np.array([1000])
-#nx = np.array([64])
+nsteps = np.array([2000])
+nx = np.array([64])
 
 paramstr = 'nsteps'  # Parameter name to scan
 param = nsteps  # Parameter values to scan
@@ -84,9 +84,9 @@ def Erreur (x , f , tfin) :
     # f[-1,1:] : comme la simulation d'arrête a tfin = T, on prend la dernière valeur 
     return err
 
-def Convergence ( T = 2.39457 , norder = 1 ) : # simulation réalisée avec n = 2 , T période pour n = 2 
+def Convergence ( T = 1.91565 , norder = 1 ) : # simulation réalisée avec n = 2 , T période pour n = 2 # T = 2.39457
 
-    err = np.array([])
+    err = np.array([]) 
     for output in outputs :
 
         xi = np.loadtxt(output+'_x')
@@ -142,6 +142,46 @@ def Eplot () :
     plt.plot(t,En, color = 'black')
     plt.xlabel('Temps [s]'   , fontsize = fs)
     plt.ylabel('Energie [J]' , fontsize = fs)
+
+def Ewplot () : # plot max(E) en fonction de omega , simulations réalisées avec n = 2 
+
+    # Simulations
+    outputs2 = []  # List to store output file names
+
+    wn = (2.0+0.5) * np.pi * np.sqrt(4.0*9.81) / 15.0 
+    print(f"wn = {wn} (pour n = 2, c-à-d deuxième mode propre)")
+    Omeg = np.array([20,22,24,25,25.5,26,26.24,26.4,26.5,27,28,29,30])*0.1
+    #Omeg = np.array([2.624,3.2,wn,3.3,4])
+
+    paramstr3 = 'om'  # Parameter name to scan
+    param3 = Omeg  # Parameter values to scan
+    nsimul = len(Omeg)
+
+    for i in range(nsimul):
+        output_file = f"{paramstr3}={param3[i]}.out"
+        outputs2.append(output_file)
+        cmd = f"{executable} {input_filename} {paramstr3}={param3[i]:.15g} output={output_file}"
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        print('Done.')
+
+    Emax = np.array([])
+    
+    for i in range(nsimul) :
+
+        Ei = np.loadtxt(outputs2[i]+'_en')
+        #plt.figure()
+        #plt.plot(Ei[:,0],Ei[:,1])
+        #plt.axhline(y=max(Ei[:,1]), color='r', linestyle='-')
+        #plt.title(f"$\\Omega =$ {Omeg[i]}")
+        Emax = np.append(Emax,max(Ei[:,1]))
+
+    plt.figure()
+    plt.scatter(Omeg,Emax, color = "black")
+    plt.axvline(x=wn, color='r', linestyle='-')
+    plt.xlabel("$\\omega$", fontsize = fs )
+    plt.ylabel("$E_{max}$", fontsize = fs )
+    
     
 def vPlot () :
 
@@ -151,9 +191,10 @@ def vPlot () :
     plt.ylabel("v [m/s]", fontsize = fs)
 
 #ftPlot()
-Convergence()
-#Eplot()
+#Ewplot ()
+#Convergence()
+Eplot()
 PlotCouleur()
-#vPlot()
+vPlot()
 plt.show()
     
