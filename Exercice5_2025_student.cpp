@@ -35,7 +35,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
       }else if (bc_l =="sortie"){
         fnext[0] = fnow[1] + beta2[1] * ( fnow[0] - fnow[1] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
       }else if (bc_l == "excitation"){
-        fnext[0] = A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
+        fnext[0] = fnow[0] + A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
         //cout << "excitation : " << A * sin(om*t) << endl ; 
       }else{
         cerr << "Merci de choisir une condition aux bord gauche valide" << endl;
@@ -50,7 +50,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] );
       // fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] ); ///  Done: Modifier pour imposer la condition au bord droit "sortie de l'onde" ( à vérifier ) 
       }else if (bc_r == "excitation"){ 
-        fnext[N-1] = A * sin(om*t); /** DONE : Modifier pour imposer la condition au bord droit sinusoidale **/
+        fnext[N-1] = fnow[N-1] + A * sin(om*t); /** DONE : Modifier pour imposer la condition au bord droit sinusoidale **/
         //cout << fnext[N-1] << endl ; 
       }else{
         cerr << "Merci de choisir une condition aux bord droit valide" << endl;
@@ -194,13 +194,18 @@ int main(int argc, char* argv[])
      vel2[i]  = g * h0[i];
   }
   
-  if ( impose_nsteps == true and initialization =="mode" )
+  if ( impose_nsteps == true and initialization =="mode" and v_uniform == true ) // Pour la convergence, impose tfin 
   { 
 	  double kn = ( n_init + 0.5 ) * PI / L ; // k du nème mode propre 
 	  double v  = sqrt(abs(vel2[0])) ; // la vitesse est censée être la même dans le 5.3  
-	  tfin = 2*PI / (kn*v) ; // t = 2pi / (v*k)
+	  double wn = kn * v ; 
+	  
+	  tfin = 2*PI / wn ; // T = 2pi / (v*k) (période)
+	  cout << "n_init = " << n_init << endl ; 
+	  cout << "L = " << L << endl ; 
+	  cout << "v = " << v << endl ; 
 	  cout << "tfin = " << tfin << endl ; 
-	  cout << "Om_n = " << kn*v << endl ; // fréquence propre 
+	  cout << "wn = " << wn << endl ; // fréquence propre 
   }
 
   // maiximal value of u^2 (to be used to set dt)
