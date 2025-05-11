@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 		  
 		  case 'C' : // eq C 
 		  
-			fnext[i] = pow(dt/dx,2) * ( vel2[i+1] - vel2[i-1] ) * fnow[i] - 2. * ( 1. - 2.*beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
+			fnext[i] = ( pow(dt/dx,2) * ( vel2[i+1] - 2 * vel2[i] + vel2[i-1] ) + 2. * ( 1. - beta2[i] ) ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
 			break ; 
 		   
 		  default : 
