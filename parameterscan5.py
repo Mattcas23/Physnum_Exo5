@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sci 
 import subprocess
 import matplotlib.pyplot as plt
 import pdb
@@ -20,14 +21,14 @@ input_filename = 'input_example_student'  # Name of the input file
 
 # ------------------------------------- Simulations ----------------------------------- #
 
-#nsteps = np.array([1,2,3,4,5,6,7,8,9])*200
-#nx = np.array([1,2,3,4,5,6,7,8,9])*20
+#nsteps = np.array([2,3,4,5,6,7,8,9])*200 # valeurs utilisées pour la convergence
+#nx = np.array([2,3,4,5,6,7,8,9])*20 # valeurs utilisées pour la convergence
 
-#nsteps = np.array([50e3])
-#nx = np.array([10000])
+nsteps = np.array([50e3])
+nx = np.array([10000])
 
-nsteps = np.array([2000])
-nx = np.array([64])
+#nsteps = np.array([2000])
+#nx = np.array([64])
 
 paramstr = 'nsteps'  # Parameter name to scan
 param = nsteps  # Parameter values to scan
@@ -68,14 +69,16 @@ E = np.loadtxt(outputs[-1]+'_en') # temps et énergie
 print(x.shape)
 print(f.shape)
 
-def f_analytique (T ,  x , L = 15.0 ) : # changer les valeurs , on a que T = tfin 
+def f_analytique (T ,  x , L = 15.0 ) : # changer les valeurs , on a que T = tfin , n_init = 2 
 
     n = 2
-    pi = 3.1415926535897932384626433832795028841971
-    kn = ( n + 0.5 ) * pi / L 
-    om = 2 * pi / T # calcul de oméga à partir de la période
+    kn = ( n + 0.5 ) * np.pi / L 
+    om = (2.0 + 0.5) * np.pi * np.sqrt(4.0*9.81) / 15.0 # calcul de oméga à partir de la période
+
+    #print(om)
+    #print(np.sin( om * T ) * np.cos( kn*x ))
     
-    return np.sin( om * T ) * np.cos( kn*x ) 
+    return ( np.cos( om * T ) + np.sin( om * T ) ) * np.cos( kn*x ) 
 
 def Erreur (x , f , tfin) :
 
@@ -84,15 +87,18 @@ def Erreur (x , f , tfin) :
     # f[-1,1:] : comme la simulation d'arrête a tfin = T, on prend la dernière valeur 
     return err
 
-def Convergence ( T = 1.91565 , norder = 1 ) : # simulation réalisée avec n = 2 , T période pour n = 2 # T = 2.39457
+def Convergence ( T = 1.91565 , norder = 2 ) : # simulation réalisée avec n = 2 , T période pour n = 2 # T = 2.39457
 
     err = np.array([]) 
     for output in outputs :
 
         xi = np.loadtxt(output+'_x')
         fi = np.loadtxt(output+'_f')
+        #plt.figure()
+        #plt.plot(fi)
         err = np.append(err,Erreur( tfin = T , x = xi, f = fi ))
-    
+
+    plt.figure()
     plt.plot(pow(T/nsteps,norder),err,'k+-') # pow(T/nsteps,norder)
     #plt.title("$\\Beta_{CFL} = $") 
     plt.xlabel(f"$(\\Delta t)^{norder}$", fontsize = fs)
@@ -101,7 +107,7 @@ def Convergence ( T = 1.91565 , norder = 1 ) : # simulation réalisée avec n =
 
 
 
-def ftPlot() : 
+def ftPlot( scatter = False ) : 
 
     t = f[:,0]
     #print(t)
@@ -112,8 +118,11 @@ def ftPlot() :
 
     for i in range(f.shape[0]) :
     
-        f_a_t = f[i,1:] # f au temps t 
-        plt.scatter(x,f_a_t)
+        f_a_t = f[i,1:] # f au temps t
+        if (scatter) : 
+            plt.scatter(x,f_a_t)
+        else :
+            plt.plot(x,f_a_t)
         plt.title(f"t = {t[i]}")
         plt.draw()
         plt.pause(0.02)
@@ -127,10 +136,27 @@ def PlotCouleur() :
     fval = f[:,1:]
 
     plt.figure()
+    #plt.title("$\\beta_{CFL} = 1.01$")
     plt.pcolor(x,t,fval)
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("t [s]", fontsize = fs)
     plt.colorbar()
+
+def Ana_vs_Num ( pos = x , tfin = 1.91565 ) : # plot la solution analytique et celle numérique au temps t = tfin = T ( réalisée pour n_init = 2 )
+
+    fnum = f[-1,1:] # solution numérique ( prendre impose_nsteps = false et CFL = 1 )
+    fana = f_analytique( T = tfin , x = pos , L = 15.0 )
+
+    
+    #print(fana)
+
+    plt.figure()
+    plt.title("n = 2", fontsize = fs - 2)
+    plt.plot(pos,fnum, color = "black" , label = "$f_{numérique}$")
+    plt.plot(pos,fana, color = "red" , linestyle = "dashed", label = "$f_{analytique}$")
+    plt.xlabel("x [m]", fontsize = fs )
+    plt.ylabel("f [m]", fontsize = fs )
+    
     
 def Eplot () :
 
@@ -178,23 +204,58 @@ def Ewplot () : # plot max(E) en fonction de omega , simulations réalisées av
 
     plt.figure()
     plt.scatter(Omeg,Emax, color = "black")
-    plt.axvline(x=wn, color='r', linestyle='-')
+    plt.axvline(x=wn, color='r', linestyle='-', label = f"$\\omega_n$ = {wn}")
     plt.xlabel("$\\omega$", fontsize = fs )
     plt.ylabel("$E_{max}$", fontsize = fs )
     
     
-def vPlot () :
+def vPlot () : # plot de la vitesse calculée en fonction de la profondeur
+
+    
+    #tcrete = f[:,0] 
+    #fcrete = np.argmax(f[:,1:] , axis =1) # position de la crête pour un certain temps t
+    #print("hoi" , len(fcrete))
+    #vnum = 
+    
 
     plt.figure() 
-    plt.plot(x,np.sqrt(v),color = "black")
+    plt.plot(x,np.sqrt(v),color = "black") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
+    #plt.plot(x,vnum)
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("v [m/s]", fontsize = fs)
 
+def CretePlot () : # plot la position de la crête en fonction de la position
+
+    fmax = np.max(f[:,1:], axis = 0) 
+    #_ = sci.interpolate.interp1d(x , fmax , kind = "quadratic") # interpolation quadratique (ne fonctionne pas)
+    #fmax_new = _(fmax)   
+    #print(fmax_new)
+    
+    plt.figure()
+    plt.plot(x, fmax , color = "black") # crête numérique 
+    plt.plot(x, pow(v[0],0.25)/pow(v,0.25), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB, au début on doit avoir une amplitude de 1 donc A0 = v[0]^1/4
+    plt.xlabel("x [m]", fontsize = fs)
+    plt.ylabel("f$_{max}$ [m]", fontsize = fs)
+    plt.legend(fontsize = fs - 2)
+
+
+    
+    
+    
+    
+  
+    #xcrete = np.argmax() # indice des positions pour lequelles la fonction est max pour chaque temps t 
+    
+    plt.figure()
+    
+
 #ftPlot()
 #Ewplot ()
+#Ana_vs_Num ( )
 #Convergence()
-Eplot()
-PlotCouleur()
+#Eplot()
+CretePlot()
+#PlotCouleur()
 vPlot()
 plt.show()
     
