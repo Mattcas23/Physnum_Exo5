@@ -211,18 +211,39 @@ def Ewplot () : # plot max(E) en fonction de omega , simulations réalisées av
     
 def vPlot () : # plot de la vitesse calculée en fonction de la profondeur
 
-    
-    #tcrete = f[:,0] 
-    #fcrete = np.argmax(f[:,1:] , axis =1) # position de la crête pour un certain temps t
-    #print("hoi" , len(fcrete))
-    #vnum = 
-    
+    tcrete = f[:,0] # temps pour chaque crête
+    icrete = [] #np.argmax(f[:,1:] , axis =0) # indice de position de la crête pour un certain temps t
 
-    plt.figure() 
-    plt.plot(x,np.sqrt(v),color = "black") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
-    #plt.plot(x,vnum)
+    a = int(0) # marque l'indice de temps t[a] à partir duquel l'onde sort ( c-à-d np.argmax = 0 )
+    b = int(-1)
+    tf = int(0)
+
+    for j in range(len(tcrete)) :
+
+        idx = np.argmax(f[j,1:])
+
+        if ( idx <= b ) : # si l'indice retourné par argmax est inférieure ou égale ou précédent , l'onde est sortie
+            tf = j # indice du temps final ( on ne considère pas les temps après que l'onde soit sortie )
+            break # on sort de la boucle for 
+        else :
+            icrete.append( idx )  # pour un certain temps t[j] on trouve l'indice de la position de la crête
+            b = idx 
+    
+    xcrete = x[icrete] # on sélectionne les positions correspondant à ces indices
+    
+    dxcrete = xcrete[1:] - xcrete[:-1] # x[i+1] - x[i]
+    dtcrete = tcrete[1:j] - tcrete[:j-1] # t[i+1] - t[i]
+    
+    vnum = dxcrete / dtcrete # on calcul la vitesse
+
+    xvnum = ( xcrete[1:] + xcrete[:-1] ) / 2 # middle points où ont été évaluées les dérivées 
+    
+    plt.figure()
+    plt.plot(xvnum,vnum, color = "black")
+    plt.plot(x,np.sqrt(v), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
     plt.xlabel("x [m]", fontsize = fs)
-    plt.ylabel("v [m/s]", fontsize = fs)
+    plt.ylabel("$u$(x) [m/s]", fontsize = fs)
+    plt.legend(fontsize = fs - 2 )
 
 def CretePlot () : # plot la position de la crête en fonction de la position
 
@@ -237,16 +258,7 @@ def CretePlot () : # plot la position de la crête en fonction de la position
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("f$_{max}$ [m]", fontsize = fs)
     plt.legend(fontsize = fs - 2)
-
-
     
-    
-    
-    
-  
-    #xcrete = np.argmax() # indice des positions pour lequelles la fonction est max pour chaque temps t 
-    
-    plt.figure()
     
 
 #ftPlot()
@@ -254,7 +266,7 @@ def CretePlot () : # plot la position de la crête en fonction de la position
 #Ana_vs_Num ( )
 #Convergence()
 #Eplot()
-CretePlot()
+#CretePlot()
 #PlotCouleur()
 vPlot()
 plt.show()
