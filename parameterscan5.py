@@ -24,10 +24,10 @@ input_filename = 'input_example_student'  # Name of the input file
 #nsteps = np.array([2,3,4,5,6,7,8,9])*200 # valeurs utilisées pour la convergence
 #nx = np.array([2,3,4,5,6,7,8,9])*20 # valeurs utilisées pour la convergence
 
-nsteps = np.array([50e3])
-nx = np.array([10000])
+nsteps = np.array([50e3]) # valeurs utilisées pour le tsunami
+nx = np.array([10000]) # valeurs utilisées pour le tsunami 
 
-#nsteps = np.array([2000])
+#nsteps = np.array([2000]) 
 #nx = np.array([64])
 
 paramstr = 'nsteps'  # Parameter name to scan
@@ -94,8 +94,6 @@ def Convergence ( T = 1.91565 , norder = 2 ) : # simulation réalisée avec n =
 
         xi = np.loadtxt(output+'_x')
         fi = np.loadtxt(output+'_f')
-        #plt.figure()
-        #plt.plot(fi)
         err = np.append(err,Erreur( tfin = T , x = xi, f = fi ))
 
     plt.figure()
@@ -110,11 +108,8 @@ def Convergence ( T = 1.91565 , norder = 2 ) : # simulation réalisée avec n =
 def ftPlot( scatter = False ) : 
 
     t = f[:,0]
-    #print(t)
 
     plt.ion() # pour faire l'animation visuelle
-
-    #plt.plot(x,f[5,1:])
 
     for i in range(f.shape[0]) :
     
@@ -147,9 +142,6 @@ def Ana_vs_Num ( pos = x , tfin = 1.91565 ) : # plot la solution analytique et 
     fnum = f[-1,1:] # solution numérique ( prendre impose_nsteps = false et CFL = 1 )
     fana = f_analytique( T = tfin , x = pos , L = 15.0 )
 
-    
-    #print(fana)
-
     plt.figure()
     plt.title("n = 2", fontsize = fs - 2)
     plt.plot(pos,fnum, color = "black" , label = "$f_{numérique}$")
@@ -158,11 +150,10 @@ def Ana_vs_Num ( pos = x , tfin = 1.91565 ) : # plot la solution analytique et 
     plt.ylabel("f [m]", fontsize = fs )
     
     
-def Eplot () :
+def Eplot () : # plot l'énergie en fonction du temps 
 
     En = E[:,1]
     t  = E[:,0]
-    print(max(En))
     
     plt.figure()
     plt.plot(t,En, color = 'black')
@@ -240,7 +231,7 @@ def vPlot () : # plot de la vitesse calculée en fonction de la profondeur
     
     plt.figure()
     plt.plot(xvnum,vnum, color = "black")
-    plt.plot(x,np.sqrt(v), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
+    plt.plot(x[icrete],np.sqrt(v[icrete]), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("$u$(x) [m/s]", fontsize = fs)
     plt.legend(fontsize = fs - 2 )
