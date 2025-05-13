@@ -135,7 +135,8 @@ def PlotCouleur() :
     plt.pcolor(x,t,fval)
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("t [s]", fontsize = fs)
-    plt.colorbar()
+    cbar = plt.colorbar()
+    cbar.set_label("h [m]", fontsize = fs)
 
 def Ana_vs_Num ( pos = x , tfin = 1.91565 ) : # plot la solution analytique et celle numérique au temps t = tfin = T ( réalisée pour n_init = 2 )
 
