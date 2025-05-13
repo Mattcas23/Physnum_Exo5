@@ -34,7 +34,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[0] = fnext[1]; /// DONE : Modifier pour imposer la condition au bord gauche libre **/
       }else if (bc_l =="sortie"){
         fnext[0] = fnow[0] - sqrt(abs(beta2[0])) * ( fnow[0] - fnow[1] ) ; /// DONE : Modifier pour imposer la condition au bord gauche "sortie de l'onde" à vérifier
-        cout << "sortie" << endl ; 
+        //cout << "sortie" << endl ; 
       }else if (bc_l == "excitation"){
         fnext[0] = fnow[0] + A * sin(om*t); /// DONE : Modifier pour imposer la condition au bord gauche sinusoidale ( à vérifier ) 
         //cout << "excitation : " << A * sin(om*t) << endl ; 
@@ -49,7 +49,7 @@ void boundary_condition(vector<double> &fnext, vector<double> &fnow, double cons
         fnext[N-1] = fnext[N-2]; /// DONE : Modifier pour imposer la condition au bord droit libre 
       }else if (bc_r =="sortie"){
         fnext[N-1] = fnow[N-1] - sqrt(abs(beta2[N-1])) * ( fnow[N-1] - fnow[N-2] );
-        cout << "sortie" << endl ; 
+        //cout << "sortie" << endl ; 
       // fnext[N-1] = fnow[N-1] - beta2[N-1] * ( fnow[N-1] - fnow[N-2] ); ///  Done: Modifier pour imposer la condition au bord droit "sortie de l'onde" ( à vérifier ) 
       }else if (bc_r == "excitation"){ 
         fnext[N-1] = fnow[N-1] + A * sin(om*t); /** DONE : Modifier pour imposer la condition au bord droit sinusoidale **/
@@ -75,7 +75,7 @@ else{
   else 
   {
 	  if ( x1 < x and x < x2 )
-	  { return f_hat * ( 1 - cos( 2*PI * (x-x1)/(x2-x1) ) ) / 2 ; }
+	  { return f_hat * ( 1 - cos( 2*PI * (x-x1)/(x2-x1) ) ) / 2. ; }
 	  else 
 	  { return 0 ; }
   }
@@ -291,6 +291,8 @@ int main(int argc, char* argv[])
     {
       /// TODO : Schémas pour les 3 cas, Equation A ou B ou C
       
+      double eqA = 2. * ( 1. - beta2[i] ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]) ; 
+      
       switch ( equation_type ) 
       {
 		  case 'A' : // eq A 
@@ -307,7 +309,7 @@ int main(int argc, char* argv[])
 		  
 		  case 'C' : // eq C 
 		  
-			fnext[i] = ( pow(dt/dx,2) * ( vel2[i+1] - 2 * vel2[i] + vel2[i-1] ) + 2. * ( 1. - beta2[i] ) ) * fnow[i] - fpast[i] + beta2[i] * (fnow[i+1] + fnow[i-1]); 
+			fnext[i] =  pow(dt/dx,2) * ( (vel2[i+1] - 2. * vel2[i] + vel2[i-1])*fnow[i] + 0.5 * (vel2[i+1] - vel2[i-1])*(fnow[i+1] - fnow[i-1]) ) + eqA ;  
 			break ; 
 		   
 		  default : 
