@@ -234,21 +234,43 @@ def vPlot () : # plot de la vitesse calculée en fonction de la profondeur
     plt.plot(x[icrete],np.sqrt(v[icrete]), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB ( u = sqrt(gh) pris du fichier Cpp )
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("$u$(x) [m/s]", fontsize = fs)
-    plt.legend(fontsize = fs - 2 )
+    
+
+    xa = 900e3
+    xb = 950e3
+    plt.axvline(x=xa, color='blue', linestyle='dotted', label = f"$x_a$ = {xa:.1e}")
+    plt.axvline(x=xb, color='green', linestyle='dotted', label = f"$x_b$ = {xb:.1e}")
+
+    plt.legend(fontsize = fs - 3 )
 
 def CretePlot () : # plot la position de la crête en fonction de la position
 
-    fmax = np.max(f[:,1:], axis = 0) 
+    fmax = np.max(f[:,1:], axis = 0)
+    idx  = np.argmax(f[0,1:]) # on commence le plot à partir de la position de la crête à t = 0 
     #_ = sci.interpolate.interp1d(x , fmax , kind = "quadratic") # interpolation quadratique (ne fonctionne pas)
     #fmax_new = _(fmax)   
     #print(fmax_new)
     
     plt.figure()
-    plt.plot(x, fmax , color = "black") # crête numérique 
-    plt.plot(x, pow(v[0],0.25)/pow(v,0.25), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB, au début on doit avoir une amplitude de 1 donc A0 = v[0]^1/4
+    plt.plot(x[idx:], fmax[idx:] , color = "black") # crête numérique
+
+    
+    # WKB eq A
+    #plt.plot(x[idx:], pow(v[idx:],0.25)/pow(v[0],0.25), color = "red" , linestyle = "dashed" , label = "WKB")
+    # WKB eq B
+    #plt.plot(x[idx:], pow(v[0],0.25)/pow(v[idx:],0.25), color = "red" , linestyle = "dashed" , label = "WKB") # solution WKB, au début on doit avoir une amplitude de 1 donc A0 = v[0]^1/4
+    # WKB eq C 
+    plt.plot(x[idx:], pow(v[0],0.75 )/pow(v[idx:],0.75 ), color = "red" , linestyle = "dashed" , label = "WKB")
+
+
+    xa = 900e3
+    xb = 950e3
+    plt.axvline(x=xa, color='blue', linestyle='dotted', label = f"$x_a$ = {xa:.1e}")
+    plt.axvline(x=xb, color='green', linestyle='dotted', label = f"$x_b$ = {xb:.1e}")
+
     plt.xlabel("x [m]", fontsize = fs)
     plt.ylabel("f$_{max}$ [m]", fontsize = fs)
-    plt.legend(fontsize = fs - 2)
+    plt.legend(fontsize = fs - 3)
     
     
 
@@ -257,8 +279,8 @@ def CretePlot () : # plot la position de la crête en fonction de la position
 #Ana_vs_Num ( )
 #Convergence()
 #Eplot()
-#CretePlot()
-#PlotCouleur()
+CretePlot()
+PlotCouleur()
 vPlot()
 plt.show()
     
